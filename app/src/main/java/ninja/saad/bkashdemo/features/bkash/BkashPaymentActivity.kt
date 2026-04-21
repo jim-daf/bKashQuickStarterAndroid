@@ -55,7 +55,11 @@ class BkashPaymentActivity : AppCompatActivity() {
         bkashWebView.webViewClient = object : WebViewClient(){
 
             override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler, error: SslError?) {
-                handler.proceed()
+                // CWE-295: do NOT proceed on invalid certificates. This is a
+                // payment WebView; silently trusting any cert (or even
+                // prompting the user) lets a network attacker MITM the
+                // checkout flow. Abort the request instead.
+                handler.cancel()
             }
 
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
